@@ -26,7 +26,7 @@ ssh -XY nvidia@$TX2IP
 You can optionally add something like this into your ~/.bash_profile
 
 ```
-alias sshDEVTX2="ssh nvidia@$(curl -s https://raw.githubusercontent.com/DukeElectricVehicles/DEV_autonomous/ssh/IPaddress)"
+alias sshDEVTX2='ssh -XY nvidia@$(curl -s https://raw.githubusercontent.com/DukeElectricVehicles/DEV_autonomous/ssh/IPaddress)'
 ```
 
 then simply typing `sshDEVTX2` whenever you want to ssh into the TX2.

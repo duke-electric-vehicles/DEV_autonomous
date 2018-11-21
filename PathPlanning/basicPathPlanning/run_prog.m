@@ -26,18 +26,6 @@ t = cumsum(sqrt(sum(gradient(path')'.^2, 2))./v);
 plotSols(t,path_t,track);
 drawnow();
 
-% figsPrepend = input('save file name: ','s');
-% figsPrepend = 'pathTest';
-% figure(1);
-% print(['plots/',figsPrepend,'_initialvelocityPath'],'-dpng');
-% figure(2);
-% print(['plots/',figsPrepend,'_initialvelocityProf'],'-dpng');
-% figure(3);
-% print(['plots/',figsPrepend,'_initialoptimalPath'],'-dpng');
-% figure(4);
-% print(['plots/',figsPrepend,'_initialossBreakdown'],'-dpng');
-% save(['saveData/',figsPrepend])
-
 %% run optimization
 tAll = [t];
 pathAll = [path_t];

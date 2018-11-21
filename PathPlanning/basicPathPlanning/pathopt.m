@@ -1,27 +1,21 @@
 function [ t, path_t ] = pathopt_new( t, path_t, track )
 %pathopt.m - given the velocity profile and constraints, solves for optimal
 %path
-%   pathopt(v,h,rmin,rmax,phi) % UPDATE THIS
-%       v - Nx1 vector: velocity profile
-%       r0 - Nx1 vector: seed path
-%       h - Nx1 vector: elevation data
-%       rmin - Nx1 vector: lower bound on r
-%       rmax - Nx1 vector: upper bound on r
-%       phi - angular coordinate for polar
-%   returns: r - radial coordinate for polar
+%   pathopt(t, path_t, track)
+%       t - Nx1 vector: initial guess time
+%       path_t - Nx1 vector: initial guess path parameter
+%       track - Nx3x2 array: inner and outer bounds of track (xyz)
+%   returns: t, path_t
 %   
 %   Gerry Chen
-%   Last Modified 4/30/2018
-%   For Numerical Analysis Spring 2018
+%   Last Modified 11/21/2018
+%   For DEV 2018-19
     
     fprintf('optimizing path...\n');
     
-%     [dd,dt] = cartToPath(pathcenter,v);
-%     l0 = cartToGuess(path0,pathcenter,theta);
     N = length(t);
     
     path = pathToCart(track, t);
-    h = path(:,3);
     dd = sum(sqrt(sum(gradient(path')'.^2, 2)));
     dt = gradient(t);
     
@@ -56,22 +50,6 @@ function [ t, path_t ] = pathopt_new( t, path_t, track )
     fprintf('plotted\n');
 end
 
-% function [path] = pathToCart(pathcenter,theta,l)
-%     N = [-sin(theta),cos(theta)];
-%     path = pathcenter+l.*N;
-% end
-function [dd,dt] = cartToPath(cart,v)
-    dx = gradient(cart(:,1));
-    dy = gradient(cart(:,2));
-    dd = sqrt(dx.^2+dy.^2);
-    dt = dd./v;
-end
-function [l] = cartToGuess(cart0,cartcenter,theta)
-    % dx . N
-    N = [-sin(theta),cos(theta)];
-    dx = cart0-cartcenter;
-    l = sum(dx.*N,2);
-end
 function [losses] = obj(t, path_t, track)
 %     dl = diff(l);dl = [dl(1);dl]; % pre-diff (not centered)
     path = pathToCart(track, path_t);
@@ -87,17 +65,6 @@ function [losses] = obj(t, path_t, track)
     hprime = dpath(:,3)./dl;
     powerInput = (max(0,vdot+drag(hprime,v,thetadot))) .* v;
     losses = sum(powerInput./motorEfficiency(powerInput,v) .* dt); % sum (accel*v dt)
-end
-function [f,losses] = lossesBreakdown(dd,l,v,hprime,theta)
-    dtheta = gradient(theta);
-    dl = gradient(l);
-    ddnew = sqrt((dd+l.*dtheta).^2+dl.^2);
-    dtnew = ddnew./v;
-    thetadot = gradient(theta)./dtnew;
-    vdot = gradient(v)./dtnew;
-    [f,losses] = drag(hprime,v,thetadot);
-    f = v.*max(0,vdot+f).*dtnew;
-    losses = v.*losses.*dtnew;
 end
 
 %% utility functions
@@ -119,25 +86,3 @@ function [c,ceq] = nonlcon(t, path_t, track)
     dl = sqrt(sum(dpath.^2, 2));
     ceq(2) = dl(1)/dt(1) - dl(end)/dt(end); % begin/end speed
 end
-
-% function [] = plotSols(t, path_t, track)
-% %plotSols - plots the solutions and loss mechanisms of a path
-%     
-%     [path] = pathToCart(track, path_t);
-%     
-% %     figure(3);clf;
-%     figure(1);
-%     f = subplot(2,2,3);
-%     cla(f);
-% %     figure(4);clf;
-%     plot(path(:,1),path(:,2),'k-')
-%     hold on
-%     plot(track(:,1,1),track(:,2,1),'r-')
-%     plot(track(:,1,2),track(:,2,2),'r-')
-%     axis square
-%     title('Path')
-%     xlabel('x (m)');
-%     ylabel('y (m)');
-%     
-%     drawnow()
-% end

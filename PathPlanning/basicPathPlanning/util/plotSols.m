@@ -105,30 +105,9 @@ function [] = plotSols(t,path_t, track)
     plot(t, theta, 'k-', t, dtheta, 'r-');
 end
 
-function [theta,t] = preprocess(r,phi,v)
-    % TODO: memoize
-    dphi = gradient(phi);
-    dr = gradient(r);
-    t = cumsum(sqrt((r.*dphi).^2+dr.^2)./v);
-    theta = pi/2+phi-atan(dr./(r.*dphi));
-end
 function [dd,dt] = cartToPath(cart,v)
     dx = gradient(cart(:,1));
     dy = gradient(cart(:,2));
     dd = sqrt(dx.^2+dy.^2);
     dt = dd./v;
-end
-function [r] = pathToPolar(r0,phi,l)
-    dphi = gradient(phi);
-    dr = gradient(r0);
-    theta = pi/2+phi-atan(dr./(r0.*dphi));
-    r = r0 + l./cos(pi/2+phi-theta);
-end
-function [dd,theta,t] = polarToPath(r,phi,v)
-    dphi = gradient(phi);
-    dr = gradient(r);
-    dd = sqrt((r.*dphi).^2+dr.^2);
-    dt = dd./v;
-    t = cumsum(dt);
-    theta = pi/2+phi-atan(dr./(r.*dphi));
 end

@@ -2,7 +2,7 @@ function [track] = importTrack(N, tf)
 %importTrack - returns the track constraints
 %   input trackName
 %   output:
-%       track - (2,N,3) array where 
+%       track - Nx3x2 array where 
 %           axis 1 is progress through the track
 %           axis 2 is x/y/z coords of track boundary point
 %           axis 3 is left/right boundaries,

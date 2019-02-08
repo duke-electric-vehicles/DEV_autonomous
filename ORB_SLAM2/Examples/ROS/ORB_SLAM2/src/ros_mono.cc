@@ -106,17 +106,19 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
         return;
     }
 
+    // ORBSLAM transform
+    cv::Mat lastPoseTcw;
+    lastPoseTcw = mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
+    if (lastPoseTcw.empty())
+        return;
+    cv::Mat lastPoseRwc = lastPoseTcw.rowRange(0,3).colRange(0,3).t(); // Rotation information
+    cv::Mat lastPosetwc = -lastPoseRwc*lastPoseTcw.rowRange(0,3).col(3); // translation information
+    vector<float> lastPoseq = ORB_SLAM2::Converter::toQuaternion(lastPoseRwc);
+
     // message to publish
     geometry_msgs::PoseWithCovarianceStamped camPoseStamped;
     camPoseStamped.header.stamp = ros::Time::now();
     camPoseStamped.header.frame_id = "ORBmap";
-
-    // ORBSLAM transform
-    cv::Mat lastPoseTcw;
-    lastPoseTcw = mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
-    cv::Mat lastPoseRwc = lastPoseTcw.rowRange(0,3).colRange(0,3).t(); // Rotation information
-    cv::Mat lastPosetwc = -lastPoseRwc*lastPoseTcw.rowRange(0,3).col(3); // translation information
-    vector<float> lastPoseq = ORB_SLAM2::Converter::toQuaternion(lastPoseRwc);
 
     // pose transformation
     tf::Transform Tcw_tf;

@@ -26,20 +26,21 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <tf.h>
-#include <tf/transform.h>
-#include <tf/quaternion.h>
+#include <tf/tf.h>
+// #include <tf/Transform.h>
+// #include <tf/Quaternion.h>
 #include <opencv2/core/core.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 #include<opencv2/core/core.hpp>
 
 #include"../../../include/System.h"
+#include"../../../include/Converter.h"
 
 using namespace std;
 
 // published ROS topics
-struct ROSmsgs {
+struct ROSmsgs_t {
     ros::Publisher camPoseStampedPub;
 };
 ROSmsgs_t ROSmsgs;
@@ -114,15 +115,15 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
     cv::Mat lastPoseTcw;
     lastPoseTcw = mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
     cv::Mat lastPoseRwc = lastPoseTcw.rowRange(0,3).colRange(0,3).t(); // Rotation information
-    cv::Mat lastPosetwc = -Rwc*lastPoseTcw.rowRange(0,3).col(3); // translation information
-    vector<float> q = ORB_SLAM2::Converter::toQuaternion(Rwc);
+    cv::Mat lastPosetwc = -lastPoseRwc*lastPoseTcw.rowRange(0,3).col(3); // translation information
+    vector<float> lastPoseq = ORB_SLAM2::Converter::toQuaternion(lastPoseRwc);
 
     // pose transformation
     tf::Transform Tcw_tf;
     Tcw_tf.setOrigin(tf::Vector3(lastPosetwc.at<float>(0,0),lastPosetwc.at<float>(0,1),lastPosetwc.at<float>(0,2)));
-    tf::Quaternion quaternion(q[0],q[1],q[2],q[3]);
+    tf::Quaternion quaternion(lastPoseq[0],lastPoseq[1],lastPoseq[2],lastPoseq[3]);
     Tcw_tf.setRotation(quaternion);
-    tf::poseTFToMsg(Tcw_fc, camPoseStamped.pose.pose);
+    tf::poseTFToMsg(Tcw_tf, camPoseStamped.pose.pose);
     camPoseStamped.pose.covariance = {}; // guess zeros for now
 
     // publish

@@ -25,6 +25,7 @@
 #include<chrono>
 
 #include<ros/ros.h>
+#include<geometry_msgs/PoseWithCovarianceStamped.h>
 #include <cv_bridge/cv_bridge.h>
 
 #include<opencv2/core/core.hpp>
@@ -32,6 +33,12 @@
 #include"../../../include/System.h"
 
 using namespace std;
+
+// published ROS topics
+struct ROSmsgs {
+    ros::Publisher camPoseStampedPub;
+};
+ROSmsgs_t ROSmsgs;
 
 class ImageGrabber
 {
@@ -55,12 +62,16 @@ int main(int argc, char **argv)
         return 1;
     }    
 
+    ros::NodeHandle nodeHandler;
+
+    // published topics
+    ROSmsgs.camPoseStampedPub = nodeHandler.advertise<geometry_msgs::PoseWithCovarianceStamped>("ORB_camPoseStamped", 1);
+
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
 
     ImageGrabber igb(&SLAM);
 
-    ros::NodeHandle nodeHandler;
     ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
 
     ros::spin();
@@ -90,7 +101,28 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
         return;
     }
 
-    mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
+    // message to publish
+    geometry_msgs::PoseWithCovarianceStamped camPoseStamped;
+    camPoseStamped.header.stamp = ros::Time::now();
+    camPoseStamped.header.frame_id = "ORBmap";
+
+    // ORBSLAM transform
+    cv::Mat lastPoseTcw;
+    lastPoseTcw = mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
+    cv::Mat lastPoseRwc = lastPoseTcw.rowRange(0,3).colRange(0,3).t(); // Rotation information
+    cv::Mat lastPosetwc = -Rwc*lastPoseTcw.rowRange(0,3).col(3); // translation information
+    vector<float> q = ORB_SLAM2::Converter::toQuaternion(Rwc);
+
+    // pose transformation
+    tf::Transform Tcw_tf;
+    Tcw_tf.setOrigin(tf::Vector3(lastPosetwc.at<float>(0,0),lastPosetwc.at<float>(0,1),lastPosetwc.at<float>(0,2)));
+    tf::Quaternion quaternion(q[0],q[1],q[2],q[3]);
+    Tcw_tf.setRotation(quaternion);
+    tf::poseTFToMsg(Tcw_fc, camPoseStamped.pose.pose);
+    camPoseStamped.pose.covariance = {}; // guess zeros for now
+
+    // publish
+    ROSmsgs.camPoseStampedPub.publish(camPoseStamped);
 }
 
 

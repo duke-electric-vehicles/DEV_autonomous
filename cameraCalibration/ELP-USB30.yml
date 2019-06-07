@@ -1,0 +1,20 @@
+image_width: 1920
+image_height: 1080
+camera_name: notusbcam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1949.875161870185, 0, 976.3352457506967, 0, 1947.978874028465, 566.3845669418087, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.04621355443053695, 0.008855118752490581, 0.003837575420060497, 0.009843970570331522, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1980.761352539062, 0, 990.3355173339041, 0, 0, 1993.383911132812, 569.4364613804901, 0, 0, 0, 1, 0]

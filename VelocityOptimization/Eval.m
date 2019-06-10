@@ -23,25 +23,28 @@ end
 
 trackData = TRACK;
 
-r = trackData.r;
-phi = trackData.phi;
+s = trackData.s;
+dyaw = trackData.dyaw;
 z = trackData.z;
+ds = trackData.ds;
+slope = trackData.slope;
     
 %% Calculate
 
-[ds, slope] = DispIncr(r, phi, z);
 [dt, TCUML] = TimeIncr(ds, V);
 
 if strcmp(OUTPUT, 'time')
     RESULT = TCUML(end);
-elseif strcmp(OUTPUT, 'energy') || strcmp(OUTPUT, 'maxpower')
-    omega = AngVel(r, phi, dt);
+elseif strcmp(OUTPUT, 'energy') || strcmp(OUTPUT, 'maxpower') || strcmp(OUTPUT, 'power')
+    omega = dyaw ./ dt;
     f = Tract(M, V, omega, dt, slope);
     pTotal = PMotor(f, V);
     
     if strcmp(OUTPUT, 'maxpower')
         RESULT = max(abs(pTotal));
-    else
+    elseif strcmp(OUTPUT, 'energy')
         RESULT = trapz(TCUML, [pTotal, pTotal(1)]);
+    else
+        RESULT = pTotal;
     end
 end

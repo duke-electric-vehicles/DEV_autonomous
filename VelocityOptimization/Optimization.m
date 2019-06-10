@@ -1,18 +1,39 @@
 % Yukai Qian
 % Duke Electric Vehicles
 
-close all; format shortg
+clear;
+% close all; format shortg
+clearAllMemoizedCaches
+
+tic
 
 global track m
 
+% load 1906091056
+
 %% Import data
 
-track = load('Galot.mat');
-r   = track.r;
-phi = track.phi;
+track = load('Galot2.mat');
+numSkip = 5;
+for fieldname = fieldnames(track)'
+    fieldname = fieldname{1};
+    track.(fieldname) = track.(fieldname)(1:numSkip:end);
+end
+% track.phi = -track.phi;
+% track.z = smooth(track.z,5,'sgolay');
+track.z = 100*track.z;
+dyaw = track.dyaw;
+% r   = track.r;
+% phi = track.phi;
+s = track.s;
 x   = track.x;
-y   = track.y;
+y   = -track.y;
 z   = track.z;
+% v = v(1:numSkip:end);
+
+[ds, slope] = DispIncr(s, z);
+track.ds = ds;
+track.slope = slope;
 
 %% Prepare function for optimization
 
@@ -25,8 +46,7 @@ m = mCar + mDriver;
 Energy = @(V) Eval(track, m, V);
 
 % Initial guess
-N = length(track.r);
-v0 = smooth(v)';
+N = length(x);
 
 % Constraints
 Lower = zeros(1, N);
@@ -37,13 +57,40 @@ pMax = 144; % Maximum power to/from motor
 % Options
 Options = optimoptions('fmincon', ...
                        'MaxFunctionEvaluations', 1e6, ...
-                       'MaxIterations', 1e4);
+                       'MaxIterations', 5, ...
+                       'ConstraintTolerance', 0);
 
 %% Optimize
+iters = 1;
+allV = zeros([iters,length(x)]);
+allE = zeros([iters,1]);
+for restarts = 1:iters
+%     v = rand(size(x)).*1-.5 + 6.7;
+    v = ones(size(x)) * 6.7;
+    v0 = v;
+    tic
+    plotStuff;
+    for i = 1:10
+        A = zeros(size(v));
+        A(1) = 1;
+        A(end) = -1;
+        b = 0;
+        v = fmincon(Energy, v, [], [], A, b, ...
+                    Lower, Upper, @(V) Constr(V, tMax, pMax), ...
+                    Options);
 
-v = fmincon(Energy, v0, [], [], [], [], ...
-            Lower, Upper, @(V) Constr(V, tMax, pMax), ...
-            Options);
+        %% plot
+        plotStuff;
+    end
+    toc
+    plotStuff;
+    allV(restarts,:) = v;
+    allE(restarts) = Eval(track, m, v)
+    
+    pause(1);
+end
+
+allE;
 
 %% Constraint function
 
@@ -51,7 +98,6 @@ function [C, CEQ] = Constr(V, TMAX, PMAX)
     global track m
     
     % Time < TMAX,
-    C = [Eval(track, m, V, 'time') - TMAX
-         Eval(track, m, V, 'maxpower') - PMAX];
+    C = [Eval(track, m, V, 'time') - TMAX];
     CEQ = [];
 end

@@ -1,28 +1,26 @@
 % Yukai Qian
 % Duke Electric Vehicles
 
-function [DS, SLOPE] = DispIncr(R, PHI, Z)
+function [DS, SLOPE] = DispIncr(s, Z)
 % DispIncr  Displacement increments and slopes.
 %
 %   DS = DispIncr(R, PHI)
 %   [DS, SLOPE] = DispIncr(___, Z)
 %
-%   R       (m)     1-by-N vector of radial coordinates.
-%   PHI     (rad)   1-by-N vector of angular coordinates.
+%   s       (m)     1-by-N vector of distance parameter coordinates.
 %   Z       (m)     1-by-N vector of elevations. 0 by default.
 %   DS      (m)     1-by-N vector of displacement increments.
 %   SLOPE           1-by-N vector of slopes of track.
 
-if nargin == 2
-    Z = zeros(1, length(R));
+if nargin == 1
+    Z = zeros(1, length(s));
 end
 
-R = Cycle(R);
-PHI = Cycle(PHI, 2*pi);
+S = Cycle(s, s(end)+18.762); % manual constant
 Z = Cycle(Z);
 
 % Displacement increments
-DS = hypot(gradient(R), R .* gradient(PHI));
+DS = gradient(S);
 
 % Slope
 SLOPE = gradient(Z) ./ DS;

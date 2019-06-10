@@ -8,4 +8,5 @@ function XDOT = TimeDiff(X, DT)
 %   DT      1-by-N vector of time increments.
 %   XDOT    1-by-N vector of XDOT = dX(t)/dt values.
 
-XDOT = Uncycle(gradient(Cycle(X))) ./ DT;
+% XDOT = Uncycle(gradient(Cycle(X))) ./ DT;
+XDOT = (circshift(X,-1) - X) ./ DT;

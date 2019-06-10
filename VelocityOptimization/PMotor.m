@@ -21,7 +21,7 @@ if nargin == 2
     U = 12;
 end
 
-r = 1; % Ohm, motor resistance
+r = 0.13; % Ohm, motor resistance
 
 % Output power
 POUT = F.*V;
@@ -30,5 +30,5 @@ POUT = F.*V;
 i = POUT/U;
 
 % Power loss, total power, efficiency
-PLOSS = r * i.^2;
-PTOT = POUT + PLOSS;
+PLOSS = r * i.^2 + POUT*0.1;
+PTOT = (POUT + PLOSS) .* (F>0);

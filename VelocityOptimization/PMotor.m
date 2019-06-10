@@ -1,30 +1,34 @@
 % Yukai Qian
 % Duke Electric Vehicles
 
-function [PTOT, PLOSS, ETA] = PMotor(POUT, U)
-% PMotor  Total power, power loss and efficiency of motor.
+function [PTOT, POUT, PLOSS] = PMotor(F, V, U)
+% PMotor  Total power, output power, power loss and efficiency of motor.
 %
-%   PTOT = PMotor(POUT)
-%   PTOT = PMotor(POUT, U)
-%   [PTOT, PLOSS, ETA] = PMotor(POUT, U)
+%   PTOT = PMotor(F, V)
+%   PTOT = PMotor(F, V, U)
+%   [PTOT, POUT, PLOSS, ETA] = PMotor(___)
 %
-%   POUT    (W) 1-by-N vector of output power.
-%   U       (V) Motor voltage. 12 by default.
-%   PTOT    (W) 1-by-N vector of total power.
-%   PLOSS   (W) 1-by-N vector of power loss.
-%   ETA     1-by-N vector of motor efficiency.
+%   F       (N)     1-by-N vector of tractive forces.
+%   V       (m/s)   1-by-N vector of horizontal velocities.
+%   U       (V)     Motor voltage. 12 by default.
+%   PTOT    (W)     1-by-N vector of total powers.
+%   POUT    (W)     1-by-N vector of output powers.
+%   PLOSS   (W)     1-by-N vector of power losses.
 %
 %   Assuming PLOSS equals resistance loss.
 
-if nargin == 1
+if nargin == 2
     U = 12;
 end
 
-R = 0.07; % Ohm, motor resistance
+r = 1; % Ohm, motor resistance
+
+% Output power
+POUT = F.*V;
 
 % Current
-I = POUT/U;
+i = POUT/U;
 
-PLOSS = R * I.^2;
+% Power loss, total power, efficiency
+PLOSS = r * i.^2;
 PTOT = POUT + PLOSS;
-ETA = POUT./PTOT;

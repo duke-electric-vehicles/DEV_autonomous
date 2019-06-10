@@ -1,7 +1,4 @@
 autorun.sh
 
-kitti2bag
-
-
 # matlab
 *.asv

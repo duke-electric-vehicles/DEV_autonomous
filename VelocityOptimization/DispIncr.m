@@ -15,8 +15,9 @@ function [DS, SLOPE] = DispIncr(s, Z)
 if nargin == 1
     Z = zeros(1, length(s));
 end
+global totalS
 
-S = Cycle(s, s(end)+18.762); % manual constant
+S = Cycle(s, totalS); % make sure loop closure
 Z = Cycle(Z);
 
 % Displacement increments

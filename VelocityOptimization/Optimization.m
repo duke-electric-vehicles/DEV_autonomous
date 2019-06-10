@@ -7,7 +7,7 @@ clearAllMemoizedCaches
 
 tic
 
-global track m
+global track m totalS
 
 % load 1906091056
 
@@ -20,8 +20,7 @@ for fieldname = fieldnames(track)'
     track.(fieldname) = track.(fieldname)(1:numSkip:end);
 end
 % track.phi = -track.phi;
-% track.z = smooth(track.z,5,'sgolay');
-track.z = 100*track.z;
+track.z = smooth(track.z,5,'sgolay')';
 dyaw = track.dyaw;
 % r   = track.r;
 % phi = track.phi;
@@ -30,6 +29,7 @@ x   = track.x;
 y   = -track.y;
 z   = track.z;
 % v = v(1:numSkip:end);
+totalS = track.totalS;
 
 [ds, slope] = DispIncr(s, z);
 track.ds = ds;
@@ -57,35 +57,36 @@ pMax = 144; % Maximum power to/from motor
 % Options
 Options = optimoptions('fmincon', ...
                        'MaxFunctionEvaluations', 1e6, ...
-                       'MaxIterations', 5, ...
-                       'ConstraintTolerance', 0);
+                       'MaxIterations', 1e3, ...
+                       'ConstraintTolerance', 0, ...
+                       'Display', 'off');
 
 %% Optimize
-iters = 1;
+iters = 10;
 allV = zeros([iters,length(x)]);
 allE = zeros([iters,1]);
 for restarts = 1:iters
-%     v = rand(size(x)).*1-.5 + 6.7;
-    v = ones(size(x)) * 6.7;
+    v = rand(size(x)).*2-1 + 6.7;
+%     v = ones(size(x)) * 6.7;
     v0 = v;
     tic
-    plotStuff;
-    for i = 1:10
-        A = zeros(size(v));
-        A(1) = 1;
-        A(end) = -1;
-        b = 0;
+    for i = 1:1
+        A = [];
+        b = [];
+%         A = zeros(size(v));
+%         A(1) = 1;
+%         A(end) = -1;
+%         b = 0;
         v = fmincon(Energy, v, [], [], A, b, ...
                     Lower, Upper, @(V) Constr(V, tMax, pMax), ...
                     Options);
-
-        %% plot
-        plotStuff;
     end
     toc
     plotStuff;
     allV(restarts,:) = v;
-    allE(restarts) = Eval(track, m, v)
+    allE(restarts) = Eval(track, m, v);
+    fprintf('Iter %d: Lap energy = %.2fJ -> %.2f mi/kWh\n', ...
+        restarts, allE(restarts), totalS*100/2.54/12/5280 / (allE(restarts)/3600/1000));
     
     pause(1);
 end

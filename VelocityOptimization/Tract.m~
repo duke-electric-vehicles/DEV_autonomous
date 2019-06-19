@@ -39,7 +39,7 @@ fAir = 1/2 * rho * cdA * V.^2;
 
 % Cornering loss
 alpha = M*(V.^2).*abs(OMEGA) ./ c; % (rad) Tire slip angle.
-fCor = c .* alpha.^2 .* pi ./ 180;
+fCor = c .* alpha.^2;
 
 % Elevation change
 fSlope = SLOPE*M*g;

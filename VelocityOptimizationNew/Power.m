@@ -23,7 +23,7 @@ f = Tract(V);
 
 % Output power
 PCOMPNT = f.*V;
-POUT = sum(PCOMPNT);
+POUT    = sum(PCOMPNT);
 
 %% Total power
 

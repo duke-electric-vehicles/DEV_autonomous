@@ -4,8 +4,8 @@
 
   Re-gen on.
   Restarts 2, 3, 6, 8 and 10 returned "Local minimum possible". The solutions
-were almost identical, with a total energy of 4834.8 J, so they could be 
-confidently seen as possible global minimum. They suggested, somewhat 
+were almost identical, with a total energy of 4834.8 J (913 mi/kWh), so they 
+could be confidently seen as possible global minimum. They suggested, somewhat 
 predictably, to use re-gen and decelerate to as low as under 6 m/s around the 
 corners, the overall lowest speed being just over 5.3 m/s. To meet the average 
 speed requirement, the speed on the straights ranged mostly from 6.7 m/s to 
@@ -66,6 +66,7 @@ Restarts
     % Generate random starting points
     vRand = cumsum(0.1*rand(1, n));
     vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
+
     v0{rst} = 6.8 + vRand;
     v0{rst} = circshift(v0{rst}, randi(n));
 
@@ -141,6 +142,7 @@ Restarts
     % Generate random starting points
     vRand = cumsum(0.05*rand(1, n));
     vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
+
     v0{rst} = 6.8 + vRand;
     v0{rst} = circshift(v0{rst}, randi(n));
 
@@ -225,6 +227,7 @@ Restarts
     vRand = cumsum(0.005*rand(1, n));
     vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
     vRand = circshift(vRand, randi(n));
+
     v0{rst} = vTmp + vRand;
 
     % Make starting points satisfy constraints
@@ -314,6 +317,7 @@ Restarts
     vRand = cumsum(0.003*rand(1, n));
     vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
     vRand = circshift(vRand, randi(n));
+
     v0{rst} = vTmp + vRand;
 
     % Make starting points satisfy constraints
@@ -329,8 +333,9 @@ Restarts
   Using the last run's best three results to generate starting points.
   All restarts returned "local minimum possible" within < 30 iterations. Eight 
 restarts resulted in total energies under 5500 J. The best result was restart
-23 which gave 5495.8 J. It can be conjectured that this approximates the global
-minimum to within 10 J. The corresponding average power output is 18.7 W.
+23 which gave 5495.8 J (803 mi/kWh). It can be conjectured that this 
+approximates the global minimum to within 10 J. The corresponding average power 
+output is 18.7 W.
   The result of restart 23 suggests to maintain a higher speed going uphill 
 than downhill, using power between 15 and 40 W, so that during the downhill the 
 throttle can be kept mostly at zero. Overall, the speed is between 6.9 m/s and
@@ -405,6 +410,7 @@ Restarts
     vRand = cumsum(0.001*rand(1, n));
     vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
     vRand = circshift(vRand, randi(n));
+
     v0{rst} = vTmp + vRand;
 
     % Make starting points satisfy constraints

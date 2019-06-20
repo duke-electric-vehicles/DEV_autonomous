@@ -89,6 +89,7 @@ for rst = 1:nRst
         vRand = cumsum(0.001*rand(1, n));
         vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
         vRand = circshift(vRand, randi(n));
+        
         v0{rst} = vTmp + vRand;
 
         % Make starting points satisfy constraints

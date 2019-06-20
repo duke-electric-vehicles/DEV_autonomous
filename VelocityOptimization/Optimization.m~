@@ -14,7 +14,7 @@ global track m totalS
 %% Import data
 
 track = load('Galot2.mat');
-numSkip = 3;
+numSkip = 8;
 for fieldname = fieldnames(track)'
     fieldname = fieldname{1};
     track.(fieldname) = track.(fieldname)(1:numSkip:end);
@@ -97,7 +97,7 @@ bestScore = 1.21 / (min(allE) / 3600 / 1000);
 [v,ind] = min(allE);
 v = allV(ind,:);
 fprintf('best iteration: Lap energy = %.2fJ -> %.2f mi/kWh\n', ...
-        allE(ind), bestScore);
+        restarts, allE(indd), totalS*100/2.54/12/5280 / (allE(restarts)/3600/1000));
 plotStuff;
 
 %% Constraint function

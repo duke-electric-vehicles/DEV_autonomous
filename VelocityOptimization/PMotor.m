@@ -21,14 +21,19 @@ if nargin == 2
     U = 12;
 end
 
-r = 0.13; % Ohm, motor resistance
+r = 0.25; % Ohm, motor resistance
 
 % Output power
 POUT = F.*V;
 
+% magnetic losses
+lossPoly_aeroAndBearing = [-1.06527e-08	-6.50352e-07	-1.02305e-04	1.12781e-03];
+lossPoly_eddy = [-1.11897e-08	-5.30369e-06	-6.07395e-03	3.03073e-02] - lossPoly_aeroAndBearing;
+Pmag = max(abs(polyval(lossPoly_eddy, V/(0.475*pi)*60)),1);
+
 % Current
-i = POUT/U;
+i = (abs(POUT)+Pmag)/U;
 
 % Power loss, total power, efficiency
-PLOSS = r * i.^2 + POUT*0.1;
+PLOSS = r * i.^2 + Pmag;
 PTOT = (POUT + PLOSS) .* (F>0);

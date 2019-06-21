@@ -1,6 +1,10 @@
-==============
-1906190950.mat
-==============
+///////////////////////
+OLD MOTOR MODEL RESULTS
+///////////////////////
+
+==========
+1906190950
+==========
 
   Re-gen on.
   Restarts 2, 3, 6, 8 and 10 returned "Local minimum possible". The solutions
@@ -14,9 +18,9 @@ speed requirement, the speed on the straights ranged mostly from 6.7 m/s to
 was 43 W. The time-averaged power was 16.6 W, and the time-averaged output 
 power was 18.9 W, treating re-gen as zero output.
 
-----------
-Constants:
-----------
+---------
+Constants
+---------
     mu    = 0.0015;     %          Rolling resistance coefficient
     m     = 21+50;      % (kg)     Total mass
     mg    = m*9.809;    % (N)      Gravity
@@ -33,9 +37,9 @@ Constants:
                         %            for completely off. Number r (0 < r < 1)
                         %            for re-gen on with maximum power r*pMax.
 
------------
-Restraints:
------------
+----------
+Restraints
+----------
     vAvg = 6.7;               % (m/s) Target average velocity
     tMax = track.s(end)/vAvg; % (s)   Maximum time
     pMax = 12*u;              % (W)   Maximum power to/from motor
@@ -75,9 +79,9 @@ Restarts
         v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
     end
 
-==============
-1906192009.mat
-==============
+==========
+1906192009
+==========
 
   Re-gen off.
   Restarts 3~10 returned "Local minumum possible", but the solutions were
@@ -90,9 +94,9 @@ It had a time-averaged power output of 19.1 W.
   The five best results will be used to generate starting points for the next
 optimization attempt.
 
-----------
-Constants:
-----------
+---------
+Constants
+---------
     mu    = 0.0015;     %          Rolling resistance coefficient
     m     = 21+50;      % (kg)     Total mass
     mg    = m*9.809;    % (N)      Gravity
@@ -109,9 +113,9 @@ Constants:
                         %            for completely off. Number r (0 < r < 1)
                         %            for re-gen on with maximum power r*pMax.
 
------------
-Restraints:
------------
+----------
+Restraints
+----------
     vAvg = 6.7;               % (m/s) Target average velocity
     tMax = track.s(end)/vAvg; % (s)   Maximum time
     pMax = 12*u;              % (W)   Maximum power to/from motor
@@ -151,9 +155,9 @@ Restarts
         v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
     end
 
-==============
-1906201139.mat
-==============
+==========
+1906201139
+==========
 
   Re-gen off.
   Using the last run's best five results to generate starting points.
@@ -164,9 +168,9 @@ much smaller interval than the five best results from the previous run do.
   The three best results will be used to generate starting points for the next
 optimization attempt.
 
-----------
-Constants:
-----------
+---------
+Constants
+---------
     mu    = 0.0015;     %          Rolling resistance coefficient
     m     = 21+50;      % (kg)     Total mass
     mg    = m*9.809;    % (N)      Gravity
@@ -183,9 +187,9 @@ Constants:
                         %            for completely off. Number r (0 < r < 1)
                         %            for re-gen on with maximum power r*pMax.
 
------------
-Restraints:
------------
+----------
+Restraints
+----------
     vAvg = 6.7;               % (m/s) Target average velocity
     tMax = track.s(end)/vAvg; % (s)   Maximum time
     pMax = 12*u;              % (W)   Maximum power to/from motor
@@ -235,9 +239,9 @@ Restarts
         v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
     end
 
-==============
-1906201230.mat
-==============
+==========
+1906201230
+==========
 
   Re-gen off.
   Using the last run's best three results to generate starting points.
@@ -248,9 +252,9 @@ indistinguishable.
   The three best results will be used to generate starting points for the next
 optimization attempt.
 
-----------
-Constants:
-----------
+---------
+Constants
+---------
     mu    = 0.0015;     %          Rolling resistance coefficient
     m     = 21+50;      % (kg)     Total mass
     mg    = m*9.809;    % (N)      Gravity
@@ -267,9 +271,9 @@ Constants:
                         %            for completely off. Number r (0 < r < 1)
                         %            for re-gen on with maximum power r*pMax.
 
------------
-Restraints:
------------
+----------
+Restraints
+----------
     vAvg = 6.7;               % (m/s) Target average velocity
     tMax = track.s(end)/vAvg; % (s)   Maximum time
     pMax = 12*u;              % (W)   Maximum power to/from motor
@@ -325,9 +329,9 @@ Restarts
         v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
     end
 
-==============
-1906201258.mat
-==============
+==========
+1906201258
+==========
 
   Re-gen off.
   Using the last run's best three results to generate starting points.
@@ -341,9 +345,9 @@ than downhill, using power between 15 and 40 W, so that during the downhill the
 throttle can be kept mostly at zero. Overall, the speed is between 6.9 m/s and
 6.5 m/s.
 
-----------
-Constants:
-----------
+---------
+Constants
+---------
     mu    = 0.0015;     %          Rolling resistance coefficient
     m     = 21+50;      % (kg)     Total mass
     mg    = m*9.809;    % (N)      Gravity
@@ -360,9 +364,9 @@ Constants:
                         %            for completely off. Number r (0 < r < 1)
                         %            for re-gen on with maximum power r*pMax.
 
------------
-Restraints:
------------
+----------
+Restraints
+----------
     vAvg = 6.7;               % (m/s) Target average velocity
     tMax = track.s(end)/vAvg; % (s)   Maximum time
     pMax = 12*u;              % (W)   Maximum power to/from motor

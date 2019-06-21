@@ -14,7 +14,7 @@
 
 function [PTOT, PCOMPNT] = Power(V)
 
-global r u d cEddy regen pMax
+global r u cEddy regen pMax
 
 %% Output power
 
@@ -25,32 +25,16 @@ f = Tract(V);
 PCOMPNT = f.*V;
 POUT    = sum(PCOMPNT);
 
-%% Eddy current loss
-
-% Angular velocity in rpm
-rpm = 60/(2*pi) * V/(d/2);
-
-% Eddy current loss
-pEddy = -polyval(cEddy, rpm);
-
 %% Total power
 
-% Current = total power / voltage:
-%   i = PTOT/u;
-% Motor power loss = eddy current loss + resistance loss:
-%   pLoss = pEddy + r*i^2;
-% Total power = output power + motor power loss:
-%   PTOT = POUT + pLoss;
-% Therefore, we have equation:
-%   PTOT^2 - u^2/r * PTOT + u^2/r * (POUT + pEddy) = 0.
-% It can be solved as follows.
+% Current
+i = POUT/u;
 
-b   = -u^2/r;
-c   = -b * (POUT + pEddy);
-det = b^2 - 4*c;
+% Motor power loss
+PMOTOR = r*i.^2 + cEddy*V.^2;
 
 % Total power
-PTOT = (-b - sqrt(det))/2;
+PTOT = POUT + PMOTOR;
 
 % Disable re-gen if regen == 0 (false).
 if strcmp(regen, 'off')

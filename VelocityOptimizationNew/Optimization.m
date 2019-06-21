@@ -3,7 +3,10 @@
 
 clear; close all; format shortg; setgroot
 
-global track mu m mg rho cdA cCor c1 c2 r u cEddy regen vAvg tMax pMax
+global track mu m mg rho cdA cCor d c1 c2 r u 
+global cEddy 
+global regen 
+global vAvg tMax pMax
 
 time = datestr(now, 'yymmddHHMM');
 
@@ -19,17 +22,21 @@ mu    = 0.0015;     %          Rolling resistance coefficient
 m     = 21+50;      % (kg)     Total mass
 mg    = m*9.809;    % (N)      Gravity
 rho   = 1.2;        % (kg/m^3) Air density at 20 C
-cdA   = 0.037;      % (m^2)    Drag coefficient times area
+cdA   = 0.033;      % (m^2)    Drag coefficient times area
 cCor  = 120*180/pi; % (N/rad)  Tire cornering stiffness
 c1    = 3.4e-4;     % (kg/m)   Wheel drag quadratic coefficient
 c2    = 0.051;      % (N)      Wheel drag constant term
-r     = 0.13;       % (ohm)    Motor resistance
+r     = 0.14;       % (ohm)    Motor resistance
 u     = 12;         % (V)      Motor voltage
-cEddy = 0.03;       % (kg/s)   Eddy current loss constant
-regen = 'off';      %          State of motor re-gen function. 'on' for
-                    %            re-gen on with maximum power pMax. 'off'
-                    %            for completely off. Number r (0 < r < 1)
-                    %            for re-gen on with maximum power r*pMax.
+d     = 0.475;      % (m)      Wheel diameter
+
+% Motor eddy current loss coefficients
+cEddy = [-5.370e-10 -4.653e-6 -5.972e-3 0]; 
+
+% State of motor re-gen function. 
+% 'on' for re-gen on with maximum power pMax. 'off' for completely off. 
+% Number r (0 < r < 1) for re-gen on with maximum power r*pMax.
+regen = 'on'; 
 
 %% Prepare for optimization
 
@@ -40,22 +47,20 @@ pMax = 12*u;              % (W)   Maximum power to/from motor
 
 % Options
 options = optimoptions('fmincon', ...
-                       'MaxFunctionEvaluations', 3e4, ...
-                       'MaxIterations', 3e1, ...
+                       'MaxFunctionEvaluations', 2e6, ...
+                       'MaxIterations', 2e3, ...
                        'ObjectiveLimit', 0, ...
                        'Display', 'off');
                    
 %% Optimize
 
-prevSol = load('1906201230');
-vPrev = cell2mat(prevSol.v([3 6 29])');
-
-nRst   = 30;            % Number of random restarts  
+nRst   = 5;            % Number of random restarts  
 v0     = cell(1, nRst); % Starting points
 v      = cell(1, nRst); % Solutions
 eTotal = NaN(1, nRst);  % Total energies for respective solutions
 flag   = NaN(1, nRst);  % Exit flags
 output = cell(1, nRst); % Optimization process information
+err    = cell(1, nRst); % Error information, if any
 
 % Prepare for plotting starting solutions
 figure('Position', [0 0 700 800]); hold on
@@ -63,50 +68,69 @@ view([15 20])
 daspect([1 1 1e-2])
 
 clrMap = jet;
-rgb = clrMap(4:2:62, :);
+rgb = clrMap(10:12:58, :);
 
 xlabel $x$
 ylabel $y$
 zlabel Velocity~(m/s)
 title  \textbf{Starting~Solutions}
 
+% Prepare for plotting optimization results
+edgeColor = [0.3 0.3 0.3];
+
+nPoint = 200;
+index = NaN(1, nPoint);
+
+for tmp = 1:nPoint
+    index(tmp) = find(track.s > (tmp-1)/nPoint * max(track.s), 1) - 1;
+end
+
+xPlot = track.x(index);
+yPlot = track.y(index);
+zPlot = track.z(index);
+
+zMin = min(track.z);
+zMax = max(track.z);
+
+areaMin = 3^2;
+areaMax = 10^2;
+
+mkrAreaZ = areaMin + (areaMax-areaMin) * (zPlot-zMin)/(zMax-zMin);
+
+% Optimize with fmincon() and plot results
 for rst = 1:nRst
-    while 1
-        % Generate random starting points
+    try
         while 1
-            a = rand;
-            b = rand;
-            
-            if a+b < 1
+            % Generate random starting points
+            vRand = cumsum(0.05*rand(1, n));
+            vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
+
+            v0{rst} = 6.8 + vRand;
+            v0{rst} = circshift(v0{rst}, randi(n));
+
+            % Make starting points satisfy constraints
+            if TimeTotal(v0{rst}) > tMax
+                v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
+            end
+
+            % Make starting points satisfy constraints
+            if TimeTotal(v0{rst}) > tMax
+                v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
+            end
+
+            % Optimize with fmincon()
+            [v{rst}, eTotal(rst), flag(rst), output{rst}] = ...
+                fmincon(@Energy, v0{rst}, ...
+                        [], [], [], [], [], [], ...
+                        @Constr, options);
+
+            % Break unless solution unfeasible
+            if all(flag(rst) ~= [-2 -3])
                 break
             end
         end
-        
-        c = 1-a-b;
-        
-        vTmp = [a b c] * vPrev;
-        
-        vRand = cumsum(0.001*rand(1, n));
-        vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
-        vRand = circshift(vRand, randi(n));
-        
-        v0{rst} = vTmp + vRand;
-
-        % Make starting points satisfy constraints
-        if TimeTotal(v0{rst}) > tMax
-            v0{rst} = TimeTotal(v0{rst})/tMax * v0{rst};
-        end
-        
-        % Optimize with fmincon()
-        [v{rst}, eTotal(rst), flag(rst), output{rst}] = ...
-            fmincon(@Energy, v0{rst}, ...
-                    [], [], [], [], [], [], ...
-                    @Constr, options);
-        
-        % Break unless solution unfeasible
-        if all(flag(rst) ~= [-2 -3])
-            break
-        end
+    catch exception
+        err{rst} = exception;
     end
     
     % Plot starting solution
@@ -118,18 +142,12 @@ for rst = 1:nRst
     figure(rst+1)
     
     colormap(jet)
-    edgeColor = [0.3 0.3 0.3];
     
-    nPoint = 200;
-    index = NaN(1, nPoint);
-    
-    for tmp = 1:nPoint
-        index(tmp) = find(track.s > (tmp-1)/nPoint * max(track.s), 1) - 1;
+    % If fmincon failed skip plotting
+    if ~isempty(err{rst})
+        continue
     end
     
-    xPlot = track.x(index);
-    yPlot = track.y(index);
-    zPlot = track.z(index);
     vPlot = v{rst}(index);
     p     = Power(v{rst});
     pPlot = p(index);
@@ -137,14 +155,7 @@ for rst = 1:nRst
     % Scatter plot with color as velocity and marker size as elevation
     subplot(1, 2, 1), hold on
     
-    zMin = min(track.z);
-    zMax = max(track.z);
-    
-    areaMin = 3^2;
-    areaMax = 10^2;
-    mkrArea = areaMin + (areaMax-areaMin) * (zPlot-zMin)/(zMax-zMin);
-    
-    scatter(xPlot, yPlot, mkrArea, vPlot, ...
+    scatter(xPlot, yPlot, mkrAreaZ, vPlot, ...
             'filled', ...
             'MarkerEdgeColor', edgeColor)
     
@@ -164,11 +175,9 @@ for rst = 1:nRst
     vMax = max(v{rst});
     vMin = min(v{rst});
     
-    areaMin = 3^2;
-    areaMax = 10^2;
-    mkrArea = areaMin + (areaMax-areaMin) * (vPlot-vMin)/(vMax-vMin);
+    mkrAreaV = areaMin + (areaMax-areaMin) * (vPlot-vMin)/(vMax-vMin);
     
-    scatter(xPlot, yPlot, mkrArea, pPlot, ...
+    scatter(xPlot, yPlot, mkrAreaV, pPlot, ...
             'filled', ...
             'MarkerEdgeColor', edgeColor)
         

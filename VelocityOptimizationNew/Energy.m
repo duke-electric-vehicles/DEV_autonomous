@@ -9,21 +9,21 @@
 %
 %   V       (m/s)   1-by-N vector of horizontal velocities.
 %   ETOT    (J)     1-by-N vector of total energy loss.
-%   ECOMPNT (J)     7-by-N vector of energy consumed by rolling resistance,
-%                   air drag, cornering loss, wheel drag, and motor loss.
+%   ECOMPNT (J)     5-by-N vector of energy consumed by air drag, rolling 
+%                   resistance, cornering loss, wheel drag, and motor loss.
 
-function [ETOT, ECOMPNT] = Energy(V)
+function [ETOTAL, ECOMPNT] = Energy(V)
 
 % Time increments
 dt = TimeIncr(V);
 
 % Energy losses
 if nargout == 1
-    PTOT = Power(V);
+    pTotal = Power(V);
 else
-    [PTOT, PCOMPNT] = Power(V);
-    PCOMPNT = PCOMPNT([2:5 7], :);
-    ECOMPNT = trapz([0 cumsum(dt)], [PCOMPNT PCOMPNT(:, 1)], 2);
+    [pTotal, pCompnt] = Power(V);
+    pCompnt = pCompnt([2:5 7], :);
+    ECOMPNT = trapz([0 cumsum(dt)], [pCompnt pCompnt(:, 1)], 2);
 end
 
-ETOT = trapz([0 cumsum(dt)], [PTOT PTOT(1)]);
+ETOTAL = trapz([0 cumsum(dt)], [pTotal pTotal(1)]);

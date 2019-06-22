@@ -13,7 +13,8 @@ view([15 20])
 daspect([1 1 1e-2])
 
 clrMap = jet;
-rgb = clrMap(7:6:61, :);
+rgb    = interp1(1:length(clrMap), clrMap, linspace(7, 60, nRst), ...
+                 'linear');
 
 xlabel $x$
 ylabel $y$

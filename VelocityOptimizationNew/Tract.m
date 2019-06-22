@@ -8,7 +8,7 @@
 %   V       (m/s)   1-by-N vector of horizontal velocities.
 %   F       (N)     1-by-N vector of tractive forces.
 %
-%   Considering acceleration, rolling resistance, air drag, cornering loss,
+%   Considering acceleration, air drag, rolling resistance, cornering loss,
 %   wheel drag and elevation change.
 
 function F = Tract(V)

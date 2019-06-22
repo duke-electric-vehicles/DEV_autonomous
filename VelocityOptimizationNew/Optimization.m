@@ -36,7 +36,7 @@ cEddy = [-5.370e-10 -4.653e-6 -5.972e-3 0];
 % State of motor re-gen function. 
 % 'on' for re-gen on with maximum power pMax. 'off' for completely off. 
 % Number r (0 < r < 1) for re-gen on with maximum power r*pMax.
-regen = 'on'; 
+regen = 'off'; 
 
 %% Prepare for optimization
 
@@ -47,14 +47,19 @@ pMax = 12*u;              % (W)   Maximum power to/from motor
 
 % Options
 options = optimoptions('fmincon', ...
-                       'MaxFunctionEvaluations', 2e6, ...
-                       'MaxIterations', 2e3, ...
+                       'MaxFunctionEvaluations', 4e4, ...
+                       'MaxIterations', 4e1, ...
                        'ObjectiveLimit', 0, ...
                        'Display', 'off');
                    
 %% Optimize
 
-nRst   = 5;            % Number of random restarts  
+prevSol    = load('1906221417');
+nBest      = 2;
+[~, index] = mink(prevSol.eTotal, nBest);
+vPrev      = cell2mat(prevSol.v(index)');
+
+nRst   = 30;            % Number of random restarts  
 v0     = cell(1, nRst); % Starting points
 v      = cell(1, nRst); % Solutions
 eTotal = NaN(1, nRst);  % Total energies for respective solutions
@@ -68,7 +73,8 @@ view([15 20])
 daspect([1 1 1e-2])
 
 clrMap = jet;
-rgb = clrMap(10:12:58, :);
+rgb    = interp1(1:length(clrMap), clrMap, linspace(7, 60, nRst), ...
+                 'linear');
 
 xlabel $x$
 ylabel $y$
@@ -102,11 +108,21 @@ for rst = 1:nRst
     try
         while 1
             % Generate random starting points
-            vRand = cumsum(0.05*rand(1, n));
-            vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
+            while 1
+                randWeight = rand(1, nBest-1);
 
-            v0{rst} = 6.8 + vRand;
-            v0{rst} = circshift(v0{rst}, randi(n));
+                if sum(randWeight) < 1
+                    break
+                end
+            end
+
+            vTmp = [randWeight 1-sum(randWeight)] * vPrev;
+
+            vRand = cumsum(0.005*rand(1, n));
+            vRand = vRand - (0:n-1)/(n-1) .* vRand(end);
+            vRand = circshift(vRand, randi(n));
+
+            v0{rst} = vTmp + vRand;
 
             % Make starting points satisfy constraints
             if TimeTotal(v0{rst}) > tMax
